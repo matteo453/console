@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Console cantieri – Di Castro</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#171B20">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEAE5;--ink:#1B232B;--muted:#5C6671;--card:#FFFFFF;--line:#CEC9C0;
+  --accent:#2F5D8A;--ok:#2E8A4F;--off:#8A929B;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Barlow","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#171B20;--ink:#EDEFF1;--muted:#98A3AE;--card:#20262D;--line:#33404C;--accent:#7FB0E0;--ok:#5CC27F;--off:#6B7682}}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+.wrap{max-width:760px;margin:0 auto;padding:32px 16px 48px}
+.brand{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.2px}
+h1{font-family:var(--display);font-weight:800;font-size:44px;line-height:1;margin:18px 0 8px}
+.lead{color:var(--muted);margin:0 0 24px}
+.cerca{width:100%;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:16px}
+.cerca:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lista{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.c{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;text-decoration:none;color:inherit;min-height:84px}
+a.c:hover{border-color:var(--accent)}
+a.c:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.c .t{flex:1;min-width:0}
+.c .nome{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1}
+.c .dove{color:var(--muted);font-size:15px;margin-top:2px}
+.stato{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-top:6px;color:var(--ok)}
+.stato::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.c .vai{font-family:var(--display);font-weight:700;font-size:20px;color:var(--accent);white-space:nowrap}
+@media (max-width:520px){.c{flex-wrap:wrap;gap:10px}.c .vai{width:100%;font-size:18px}}
+.c.off{opacity:.65}
+.c.off .stato,.c.off .vai{color:var(--off)}
+.vuoto{color:var(--muted);padding:12px 4px}
+.info{margin-top:32px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;font-size:15px}
+.info h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0 0 8px}
+.info ol{margin:0;padding-left:20px}
+.info li{margin:4px 0}
+footer{color:var(--muted);font-size:13px;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">Di Castro</div>
+  <h1>Console dei cantieri</h1>
+  <p class="lead">Scegli un cantiere: la sua console si apre su Claude con il tuo account aziendale.</p>
+
+  <input class="cerca" id="cerca" type="search" placeholder="Cerca un cantiere…" aria-label="Cerca un cantiere">
+  <ul class="lista" id="lista"></ul>
+  <p class="vuoto" id="vuoto" hidden>Nessun cantiere con questo nome.</p>
+
+  <div class="info">
+    <h2>Prima volta?</h2>
+    <ol>
+      <li>Entra su claude.ai con l'account <b>@dicastro.eu</b> dell'organizzazione Di Castro.</li>
+      <li>In Claude collega <b>Google Sheets</b> e <b>Google Drive</b> con lo stesso account (Impostazioni → Connettori).</li>
+      <li>Se la console dice che non hai accesso, chiedi all'ufficio tecnico di condividertela.</li>
+    </ol>
+  </div>
+  <footer>Questa pagina contiene solo l'elenco dei cantieri: i dati si vedono nella console, dopo l'accesso.</footer>
+</div>
+
+<script>
+// ELENCO DEI CANTIERI — lo aggiorna l'ufficio tecnico (o Claude) quando nasce una console.
+// console: link della console su claude.ai; vuoto = console non ancora creata.
+// attivo: true = in corso, false = chiuso.
+const CANTIERI = [
+  { nome: "Anticoli Corrado – Palazzo delle Associazioni", dove: "Via San Rocco, Anticoli Corrado (RM)", attivo: true, console: "https://claude.ai/artifact/UY7iJR9ZtnA9eVmNiXKhkN" },
+  { nome: "CNR – Mensa Tor Vergata", dove: "Via del Fosso del Cavaliere 100, Roma", attivo: true, console: "https://claude.ai/artifact/WTF6x3UDCfUsGNDSCripFE" }
+];
+
+const lista = document.getElementById('lista');
+const vuoto = document.getElementById('vuoto');
+const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+function disegna(q) {
+  const parole = norm(q || '').split(/\s+/).filter(Boolean);
+  const righe = CANTIERI
+    .filter((c) => parole.every((p) => norm(c.nome + ' ' + c.dove).includes(p)))
+    .sort((a, b) => (b.attivo - a.attivo) || (!!b.console - !!a.console) || a.nome.localeCompare(b.nome, 'it'));
+  lista.replaceChildren(...righe.map((c) => {
+    const li = document.createElement('li');
+    const el = document.createElement(c.console ? 'a' : 'div');
+    el.className = 'c' + (c.console ? '' : ' off');
+    if (c.console) { el.href = c.console; el.rel = 'noopener'; }
+    const t = document.createElement('div'); t.className = 't';
+    const n = document.createElement('div'); n.className = 'nome'; n.textContent = c.nome;
+    const d = document.createElement('div'); d.className = 'dove'; d.textContent = c.dove;
+    const s = document.createElement('div'); s.className = 'stato'; s.textContent = c.attivo ? 'In corso' : 'Chiuso';
+    t.append(n, d, s);
+    const v = document.createElement('div'); v.className = 'vai'; v.textContent = c.console ? 'Apri console ›' : 'Console non ancora creata';
+    el.append(t, v); li.append(el); return li;
+  }));
+  vuoto.hidden = righe.length > 0;
+}
+document.getElementById('cerca').addEventListener('input', (e) => disegna(e.target.value));
+disegna('');
+</script>
+</body>
+</html>
